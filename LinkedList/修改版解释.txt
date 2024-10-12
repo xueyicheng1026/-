@@ -1,0 +1,1 @@
+增加了一个precur指针 指向currentPos的前一个位置 以便remove currentPos
