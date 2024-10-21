@@ -1,0 +1,123 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{geometry}  
+\geometry{margin=1.5cm, vmargin={0pt,1cm}}  
+\setlength{\topmargin}{-1cm}  
+\setlength{\paperheight}{29.7cm}  
+\setlength{\textheight}{25.3cm}  
+  
+% useful packages.  
+\usepackage{amsfonts, amsmath, amssymb, amsthm}  
+\usepackage{enumerate, graphicx, multicol, fancyhdr, layout}  
+\usepackage{listings, float, caption}  
+\usepackage{verbatim}  
+  
+\lstset{  
+    basicstyle=\ttfamily, basewidth=0.5em  
+}  
+  
+% some common command  
+\newcommand{\dif}{\mathrm{d}}  
+\newcommand{\avg}[1]{\left\langle #1 \right\rangle}  
+\newcommand{\difFrac}[2]{\frac{\dif #1}{\dif #2}}  
+\newcommand{\pdfFrac}[2]{\frac{\partial #1}{\partial #2}}  
+\newcommand{\OFL}{\mathrm{OFL}}  
+\newcommand{\UFL}{\mathrm{UFL}}  
+\newcommand{\fl}{\mathrm{fl}}  
+\newcommand{\op}{\odot}  
+\newcommand{\Eabs}{E_{\mathrm{abs}}}  
+\newcommand{\Erel}{E_{\mathrm{rel}}}  
+  
+\begin{document}  
+  
+\pagestyle{fancy}  
+\fancyhead{}  
+\lhead{薛亦呈, 3230104027}  
+\chead{数据结构与算法第四次作业}  
+\rhead{Oct.19th, 2024}  
+  
+\section{测试程序的设计思路}  
+  
+通过以下代码创建了 \texttt{lst1}, \texttt{lst2}, \texttt{lst3}, \texttt{lst4}, \texttt{lst5} 来测试 \texttt{List} 的构造函数和赋值运算。  
+  
+\begin{lstlisting}[language=C++]  
+List<int> lst1;  
+List<int> lst2 {1,3,5,7,9};  
+List<int> lst3 = lst2;  
+List<int> lst4 = List<int>({2,4,6,8,10});  
+const List<int> lst5(lst3);  
+\end{lstlisting}  
+  
+通过以下代码测试 \texttt{push\_back} 和 \texttt{push\_front} 的调用：  
+  
+\begin{lstlisting}[language=C++]  
+for (int i = 0; i < 10; ++i) {  
+    if (i % 2 == 0)   
+        lst1.push_back(i);  
+    else   
+        lst1.push_front(i);  
+}  
+lst1.push_back(13);  
+\end{lstlisting}  
+  
+测试结果如下：  
+  
+\begin{verbatim}  
+9 7 5 3 1 0 2 4 6 8 13  
+1 3 5 7 9  
+1 3 5 7 9  
+2 4 6 8 10  
+1 3 5 7 9  
+\end{verbatim}  
+  
+\texttt{size()} 的测试，正确输出为：  
+  
+\begin{verbatim}  
+11  
+\end{verbatim}  
+  
+\texttt{clear()} 和 \texttt{empty()} 的测试，正确输出为：  
+  
+\begin{verbatim}  
+1  
+\end{verbatim}  
+  
+\texttt{front()} 和 \texttt{back()} 的测试：  
+  
+\begin{verbatim}  
+9  
+13  
+\end{verbatim}  
+  
+\texttt{pop\_front()} 和 \texttt{pop\_back()} 的测试：  
+  
+\begin{verbatim}  
+100 7 5 3 1 0 2 4 6 8 200  
+\end{verbatim}  
+  
+\texttt{erase()} 的测试：  
+  
+\begin{verbatim}  
+7 5 3 1 0 2 4 6 8  
+5  
+5 3 1 0 2 4 6 8  
+\end{verbatim}  
+  
+\texttt{iterator} 和 \texttt{const\_iterator} 的测试：  
+  
+\begin{verbatim}  
+1 3 5 7 9  
+1  
+5  
+5  
+1  
+\end{verbatim}  
+  
+\section{测试的结果}  
+  
+测试结果一切正常，完全符合预期输出。我用 Valgrind 进行测试，未发现内存泄露。  
+  
+\section{Bug 报告}  
+  
+\texttt{end()} 函数指向尾部哨兵，并不需要动态版本。  
+  
+\end{document}  
