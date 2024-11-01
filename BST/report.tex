@@ -1,0 +1,197 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{geometry, CJKutf8}
+\geometry{margin=1.5cm, vmargin={0pt,1cm}}
+\setlength{\topmargin}{-1cm}
+\setlength{\paperheight}{29.7cm}
+\setlength{\textheight}{25.3cm}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumerate}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{fancyhdr}
+\usepackage{layout}
+\usepackage{listings}
+\usepackage{forest}
+\usepackage{float, caption}
+
+
+\lstset{
+    basicstyle=\ttfamily, basewidth=0.5em
+}
+
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\avg}[1]{\left\langle #1 \right\rangle}
+\newcommand{\difFrac}[2]{\frac{\dif #1}{\dif #2}}
+\newcommand{\pdfFrac}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\OFL}{\mathrm{OFL}}
+\newcommand{\UFL}{\mathrm{UFL}}
+\newcommand{\fl}{\mathrm{fl}}
+\newcommand{\op}{\odot}
+\newcommand{\Eabs}{E_{\mathrm{abs}}}
+\newcommand{\Erel}{E_{\mathrm{rel}}}
+
+\begin{document}
+
+\pagestyle{fancy}
+\fancyhead{}
+\lhead{薛亦呈, 3230104027}
+\chead{数据结构与算法第五次作业}
+\rhead{\today}
+
+\section{remove函数设计思路}
+首先detachMin函数通过递归实现，用于寻找被删节点右子树中的最左（即最小）节点，然后将它的右子树赋予它的父节点，这里只对指针进行操作。
+
+然后findMin找到用于替换的节点，先让指向被删节点的指针指向用于替换的指针，再将用于替换的指针的左右孩子赋值成被删节点的左右孩子，最后delete原来的被删节点。
+
+这里需要注意如果被删节点的右孩子就是用于替换的节点，那么会让用于替换的节点的左孩子指针指向它自己，所以添加了一个if语句避免此bug。\\
+具体代码如下：
+\begin{verbatim}
+    BinaryNode *detachMin(BinaryNode *&t){
+        if (t->left == nullptr ) {
+            return t->right;
+        }
+        else{
+            t->left = detachMin(t->left);
+            return t;
+        }
+    }
+    
+    void remove(const Comparable &x, BinaryNode * &t) {
+        if (t == nullptr) return;
+        if (t->element > x)
+            return remove(x, t->left);
+        else if (t->element < x)
+            return remove(x,t->right);
+        else{
+            BinaryNode* oldNode = t;
+            if (t->left != nullptr && t->right != nullptr){
+                BinaryNode* minNode = findMin(t->right);
+                detachMin(t->right);
+                t = minNode;  
+                minNode->left = oldNode->left;
+                if (minNode != oldNode->right) minNode->right = oldNode->right;
+            }
+            else{
+                t = (t->left == nullptr) ? t->right : t->left;
+            }
+            delete oldNode;
+        }
+    }
+\end{verbatim}
+
+\section{测试程序}
+
+首先，创建一颗树，如下图：
+
+\begin{forest}
+for tree={
+	circle,draw,
+	minimum size=2em,
+	inner sep=1pt,
+	l=1.5cm, s sep=1.5cm,
+	edge={->},
+}
+[6
+	[2
+		[1]
+		[5
+			[3
+				[null,phantom]
+				[4]
+			]
+			[null,phantom]
+		]
+	]
+	[8
+		[null,phantom]
+		[9
+			[null,phantom]
+			[10]
+		]
+	]
+]
+\end{forest}
+
+然后删除节点8，这是一个特殊情况，即替换节点是被删节点的右子树，需排除修改后改节点指向自己的情况，删除后树如下：
+
+\begin{forest}
+for tree={
+	circle, draw,
+	minimum size=2em,
+	inner sep=1pt,
+	l=1.5cm,
+	s sep=1.5cm,
+	edge={->}
+}
+[6
+	[2
+		[1]
+		[5
+			[3
+				[null,phantom]
+				[4]
+			]
+			[null,phantom]
+		]
+	]
+	[9
+		[null,phantom]
+		[10]
+	]
+]
+\end{forest}
+
+然后删除2，这是一个常规情况，删除后树如下图：
+
+\begin{forest}
+for tree={
+	circle, draw,
+	minimum size=2em,
+	inner sep=1pt,
+	l=1.5cm,
+	s sep=1.5cm,
+	edge={->},
+}
+[6
+	[3
+		[1]
+		[5
+			[4]
+			[null,phantom]
+		]
+	]
+	[9
+		[null,phantom]
+		[10]
+	]
+]
+\end{forest}
+
+最后再删除根节点6，这也是一个特殊情况，删除后树如下图：
+
+\begin{forest}
+for tree={
+	circle, draw,
+	minimum size=2em,
+	inner sep=1pt,
+	l=1.5cm,
+	s sep=1.5cm,
+	edge={->}
+}
+[9
+	[3
+		[1]
+		[5
+			[4]
+			[null,phantom]
+		]
+	]
+	[10]
+]
+\end{forest}
+
+\end{document}
+
