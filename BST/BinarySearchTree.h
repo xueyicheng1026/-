@@ -258,15 +258,14 @@ private:
         }
         return t;
     }
-
-    BinaryNode *detachMin(BinaryNode *&t){
-        if (t->left == nullptr ) {
-            return t->right;
+    BinaryNode *detachMin(BinaryNode *&t) {
+        if (t == nullptr) return nullptr;
+        if (t->left == nullptr) {
+            BinaryNode* minNode = t;
+            t = t->right;      
+            return minNode;    
         }
-        else{
-            t->left = detachMin(t->left);
-            return t;
-        }
+        return detachMin(t->left);
     }
 
     /**
@@ -377,14 +376,13 @@ private:
     void remove(const Comparable &x, BinaryNode * &t) {
         if (t == nullptr) return;
         if (t->element > x)
-            return remove(x, t->left);
+            remove(x, t->left);
         else if (t->element < x)
-            return remove(x,t->right);
+            remove(x,t->right);
         else{
             BinaryNode* oldNode = t;
             if (t->left != nullptr && t->right != nullptr){
-                BinaryNode* minNode = findMin(t->right);
-                detachMin(t->right);
+                BinaryNode* minNode = detachMin(t->right);
                 t = minNode;  
                 minNode->left = oldNode->left;
                 if (minNode != oldNode->right) minNode->right = oldNode->right;
