@@ -1,0 +1,55 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{geometry, CJKutf8}
+\geometry{margin=1.5cm, vmargin={0pt,1cm}}
+\setlength{\topmargin}{-1cm}
+\setlength{\paperheight}{29.7cm}
+\setlength{\textheight}{25.3cm}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumerate}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{fancyhdr}
+\usepackage{layout}
+\usepackage{listings}
+\usepackage{forest}
+\usepackage{float, caption}
+
+
+\lstset{
+    basicstyle=\ttfamily, basewidth=0.5em
+}
+
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\avg}[1]{\left\langle #1 \right\rangle}
+\newcommand{\difFrac}[2]{\frac{\dif #1}{\dif #2}}
+\newcommand{\pdfFrac}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\OFL}{\mathrm{OFL}}
+\newcommand{\UFL}{\mathrm{UFL}}
+\newcommand{\fl}{\mathrm{fl}}
+\newcommand{\op}{\odot}
+\newcommand{\Eabs}{E_{\mathrm{abs}}}
+\newcommand{\Erel}{E_{\mathrm{rel}}}
+
+\begin{document}
+
+\pagestyle{fancy}
+\fancyhead{}
+\lhead{薛亦呈, 3230104027}
+\chead{AvlTree remove函数}
+\rhead{\today}
+
+\section{程序设计思路}
+首先，增加了balance函数，用于平衡某一节点的子树高度，判断该节点对应的四种子树高度情况，然后进行对应的rotation操作。
+
+remove函数在BinarySearchTree的基础上，在每次递归调用返回时，对当前t指针指向节点调用balance函数，因为递归返回时是自下而上的，所以每次调用时，下方时保持平衡的，这样可以保持AVL树的平衡，并且detachMin函数中的删除操作有一种情况也会导致高度的失衡，因此在每次返回时也调用了balance函数。
+
+
+
+\section{测试时的问题}
+当输入数据较大时，remove函数的递归栈内存空间会溢出（段错误），因此修改了一个迭代版本的remove，递归的版本命名成了BST\_0.h，对应的test函数命名为test\_0.cpp，可以用make old指令调用。
+
+\end{document}
+
