@@ -1,0 +1,162 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{geometry, CJKutf8}
+\geometry{margin=1.5cm, vmargin={0pt,1cm}}
+\setlength{\topmargin}{-1cm}
+\setlength{\paperheight}{29.7cm}
+\setlength{\textheight}{25.3cm}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumerate}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{fancyhdr}
+\usepackage{layout}
+\usepackage{listings}
+\usepackage{forest}
+\usepackage{float, caption}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{array}
+
+
+\lstset{
+    basicstyle=\ttfamily, basewidth=0.5em,
+    language=C++,                    
+    basicstyle=\ttfamily\small,      
+    keywordstyle=\color{blue},       
+    commentstyle=\color{green!50!black}, 
+    stringstyle=\color{red},         
+    numbers=left,                    
+    numberstyle=\tiny\color{gray},   
+    stepnumber=1,                    
+    breaklines=true,                 
+    frame=single,                    
+    tabsize=4,                        
+    showstringspaces=false,     
+}
+
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\avg}[1]{\left\langle #1 \right\rangle}
+\newcommand{\difFrac}[2]{\frac{\dif #1}{\dif #2}}
+\newcommand{\pdfFrac}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\OFL}{\mathrm{OFL}}
+\newcommand{\UFL}{\mathrm{UFL}}
+\newcommand{\fl}{\mathrm{fl}}
+\newcommand{\op}{\odot}
+\newcommand{\Eabs}{E_{\mathrm{abs}}}
+\newcommand{\Erel}{E_{\mathrm{rel}}}
+
+\begin{document}
+
+\pagestyle{fancy}
+\fancyhead{}
+\lhead{薛亦呈, 3230104027}
+\chead{AvlTree remove函数}
+\rhead{\today}
+
+\section{程序设计思路}
+声明：所建堆为最小堆
+
+\subsection{升堆函数}
+给定待操作元素的位置pos，与他的父亲节点比较大小，若待操作元更小则交换两者位置，while循环直到到达根节点或者待操作元比父亲节点大
+
+\begin{lstlisting}
+    void percolate_up(int pos) {
+        while (pos > 1 && data[pos] < data[(pos)>>1])
+        {
+            swap(data[pos], data[pos>>1]);
+            pos >>= 1;
+        }
+    }
+\end{lstlisting}
+
+\subsection{降堆函数}
+给定待操作元素的位置pos，与他的两个子节点比较大小，若待操作元更大则与其中较小的一个（只有一个子节点并比他大时直接交换）交换位置，while循环直到到达叶子节点或者待操作元比所有子节点小
+
+\begin{lstlisting}
+    void percolate_down(int pos) {
+        while (true) {
+            int smallest = pos;
+            int left = 2 * pos ;
+            int right = 2 * pos + 1;
+            // if (left < currentSize && (data)[left] < (data)[smallest])
+            //     smallest = left;
+            smallest = (left < currentSize && (data)[left] < (data)[smallest]) ? left : smallest;
+            // if (right < currentSize && (data)[right] < (data)[smallest])
+            //     smallest = right;
+            smallest = (right < currentSize && (data)[right] < (data)[smallest]) ? right : smallest;
+            if (smallest == pos) break;
+            swap(data[pos], data[smallest]);
+            pos = smallest;
+        }   
+    }
+
+\end{lstlisting}
+
+\subsection{建堆函数}
+对一个已有的vector进行建堆，只需从叶子节点开始，从下往上对每个元素进行升堆操作，这样复杂度为O\text{(n)}
+
+\begin{lstlisting}
+    void build() {
+        for (int i = currentSize>>1; i>=1; --i) {
+            percolate_down(i);
+        }
+    }
+\end{lstlisting}
+
+\subsection{排序}
+因为最小堆维护了根节点最小，所以每次只需要把根节点和最后一个节点交换位置，并让堆的大小-1（最后一个已经有序），然后对交换后的第一个元素进行一次降堆操作，维护堆的性质即可，总负责度为O\text{(nlogn)}
+
+\begin{lstlisting}
+    void sort() {
+        int n = currentSize;
+        for (int i = 1; i <= n; ++i){
+            swap(data[1], data[currentSize]);
+            --currentSize;
+            percolate_down(1);
+        }
+        currentSize = n;
+    }
+\end{lstlisting}
+
+\section{对比测试}
+
+\begin{tabular}{|c|c|c|}
+\hline
+数据类型 & my\_heap\_sort & std::heap\_sort\\
+\hline
+Random sequence & 88ms & 48ms\\
+\hline
+Ordered sequence & 42ms & 32ms\\
+\hline
+Reverse sequence & 39ms &31ms\\
+\hline
+Repetitive sequence &77ms & 44ms\\
+\hline
+
+\end{tabular}
+
+\section{额外测试}
+    
+\subsection{不开启O2优化}
+在数据量较小\text{(<10000左右)}时，std::heap\_sort的效率更高，但是由于数据量非常小，只相差几毫秒可以忽略
+
+在数据量较大\text{(>10000000)}时，my\_heap\_sort效率更高，数据量为1000000时误差在500毫秒左右
+
+\subsection{开启O2优化}
+无论数据量大小，std::heap\_sort的效率均更高，在标准数据量\text{(1000000)}时，std::heap\_sort效率更高，大约为1.7倍，但是当数据量不断升高时，两者效率越来越接近，在数据量为20000000时几乎持平，后续my\_heap\_sort效率更高，而当数据量非常大时\text{(以100000000为例)}，my\_heap\_sort\text{(总耗时为18秒)}比std::heap\_sort快了10秒。
+
+\section{原因分析}
+
+std::heap\_sort可能在数据量较小时混合使用了其他排序方法
+
+my\_heap\_sort内联小函数较多，不开启O2优化会有不必要开销
+
+\section{相应小修改}
+
+将if语句改成了位运算? :
+
+\end{document}
+
