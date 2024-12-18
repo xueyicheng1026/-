@@ -1,0 +1,207 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{geometry, CJKutf8}
+\geometry{margin=1.5cm, vmargin={0pt,1cm}}
+\setlength{\topmargin}{-1cm}
+\setlength{\paperheight}{29.7cm}
+\setlength{\textheight}{25.3cm}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumerate}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{fancyhdr}
+\usepackage{layout}
+\usepackage{listings}
+\usepackage{forest}
+\usepackage{float, caption}
+
+
+\lstset{
+    basicstyle=\ttfamily, basewidth=0.5em
+}
+
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\avg}[1]{\left\langle #1 \right\rangle}
+\newcommand{\difFrac}[2]{\frac{\dif #1}{\dif #2}}
+\newcommand{\pdfFrac}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\OFL}{\mathrm{OFL}}
+\newcommand{\UFL}{\mathrm{UFL}}
+\newcommand{\fl}{\mathrm{fl}}
+\newcommand{\op}{\odot}
+\newcommand{\Eabs}{E_{\mathrm{abs}}}
+\newcommand{\Erel}{E_{\mathrm{rel}}}
+
+\begin{document}
+
+\pagestyle{fancy}
+\fancyhead{}
+\lhead{薛亦呈, 3230104027}
+\chead{四则运算器}
+\rhead{\today}
+
+\section{程序设计思路}
+\subsection{实现功能}
+1.常规四则运算
+
+2.乘方\textasciicircum（连用时，优先级为从前向后）(附加）
+
+3.负数的输入以及负号的叠用（附加）
+
+4.小数的输入以及整数为0省略的情况
+
+5.科学计数法的输入（附加）
+
+6.判断错误类型（附加）
+
+\subsection{合法输入}
+小数（整数位是0可以省略，如.15表示0.15)；科学计数法；若干个负号和其他运算符的连接（如1+---1、（--2+1）/---1））
+
+\subsection{不合法输入}
+1.括号不匹配
+
+提示：Invalid expression: Bracket missmatch!
+
+2.不正确的运算符、或非法字符:
+
+提示：Invalid expression: Invalid operator!
+
+3.运算符连续、运算符多余对于负号，数字或左括号前添加若干连续负号属于合法，但连续负号之间出现其他运算符属于错误，如：1*--2合法，1-*--2不合法，1--*2不合法
+
+提示：Invalid expression: Operator used incorrectly!
+
+4.除数为零
+
+提示：Divided by zero!
+
+5.科学计数法指数、底数缺失
+
+提示：Invalid expression: Scientific notation error!
+
+6.小数点误用
+
+提示：Invalid expression: Decimal point error!
+
+\subsection{预处理}
+\subsubsection{负号合并}
+将连续的奇数个负号合并为一个负号，偶数个合并为两个负号
+
+\subsubsection{负号替换}
+case1: 前一项为数字或')'的负号转变成"+(0-1)@":
+
+\begin{center}
+ 			‘-’   --->   "+(0-1)@"
+\end{center}
+
+case2: 前一项为运算符或“(”的负号或第一个负号转变成"(0-1)@":
+
+\begin{center}
+			 ‘-’   --->   "(0-1)@"
+\end{center}
+
+其中@表示乘法，但是与普通乘法优先级不同，为优先级最高的运算
+
+同时兼容了科学计数法输入时，指数为负数的情况，如：1e-1
+
+这样支持了负数的输入，且保证了正常情况下不会出现两个连续运算符
+
+\subsubsection{添加空格}
+向所有运算符前后各增添一个空格，便于后续读取处理
+
+\subsection{计算}
+使用c++自带的sstream处理输入流
+分别建立数字栈和运算符栈
+
+遇到数字，直接压入数字栈
+遇到运算符，若是空栈，直接入栈；若是左括号直接入栈；若是右括号进行弹出，直到遇到左括号；若是普通的四则运算符，若优先级>栈顶元素优先级，入栈；否则不断进行运算，直到栈顶元素小于当前运算符优先级，然后再入栈。
+
+在读取完expression后，再执行栈中所有的运算，最终数字栈中的栈顶元素即表达式的值。
+\subsection{非法判断}
+在执行运算时，判断除数是否为0
+
+运算前判断括号是否匹配
+
+运算时若出现栈空的情况，则是运算符连续
+
+\section{测试程序}
+\subsection{非法判断测试}
+\subsubsection{括号不匹配}
+
+(1)1+2*(3-(4*2)))/2
+
+(2)1+2*((3-(4*2))/2
+
+\subsubsection{运算符使用错误}
+
+(1)(-)
+
+(2)1+2*3-4/+2
+
+(3)1+2*3-4/2-
+		               
+(4)1+2--*3-4/2
+
+(5)1@2
+
+(6)2=1+1
+
+\subsubsection{科学计数法指数或底数缺失}
+
+(1)1.2E
+
+(2)e-1
+
+\subsubsection{被0除}
+
+(1)1+2*3-4/0+2
+
+\subsubsection{小数点误用测试}
+
+(1)1.2.3+1
+
+(2)..2*1
+
+\subsection{负号处理测试}
+(1)-1+-(1*-2)--5 等价于 -1-(1*(-2))+5
+
+(2)1+2*--3-4/2 等价于 1+2*(-3)-4/2
+
+\subsection{小数测试}
+(1)1-.1/.01*(.2+.1) 等价于 1-0.1/0.01*(0.2+0.1)
+
+(2)1-0.1/.01*(.2+.1) 等价于 1-0.1/0.01*(0.2+0.1)
+
+(3)1-.1/-.01*(.2+-.1) 等价于 1-0.1/(-0.01)*(0.2-0.1)
+
+
+\subsection{科学计数法测试}
+(1)1.0e-2/1e-1-1E-1
+
+(2)1.0e---2/1e-1-1E-1
+
+\subsection{乘方测试}
+(1)2\textasciicircum2+1
+
+(2)2\textasciicircum-2+1
+
+(3)2\textasciicircum--2+1
+
+(4)2\textasciicircum(-2+1)
+
+(5)2\textasciicircum-(-2+1)
+
+(6)2\textasciicircum3\textasciicircum2
+
+\subsection{混合运算测试}
+(1)1024/2\textasciicircum e10--8
+
+(2).125/8\textasciicircum(1+2/2---3)
+
+(3)11e---2+.1+100\textasciicircum.5
+
+(4)11e---2+.1+100\textasciicircum-.5
+
+
+\end{document}
+
